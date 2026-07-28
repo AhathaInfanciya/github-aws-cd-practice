@@ -1,12 +1,14 @@
 import json
-import boto3
 import logging
 import os
 import re
-from datetime import datetime
+from datetime import UTC, datetime
+from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.application import MIMEApplication
+
+
+import boto3
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -175,9 +177,9 @@ def build_html_report(
 ):
 
     counts = parse_change_counts(summary)
-    risk_level, risk_color, risk_emoji = parse_risk_level(summary)
+    _risk_level, _risk_color, _risk_emoji = parse_risk_level(summary)    
     changes = parse_individual_changes(summary)
-    generated_at = datetime.utcnow().strftime("%B %d, %Y at %I:%M %p UTC")
+    generated_at = datetime.now(UTC).strftime("%B %d, %Y at %I:%M %p UTC")
 
     cards_html = ""
     for ch in changes:
@@ -464,7 +466,7 @@ def lambda_handler(event, context):
             else:
                 logger.warning("No recipient emails configured. Skipping email.")
         except Exception as email_err:
-            logger.error(f"Email failed: {str(email_err)}")
+            logger.error(f"Email failed: {email_err!s}")
             import traceback
 
             traceback.print_exc()
@@ -484,7 +486,7 @@ def lambda_handler(event, context):
         )
 
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
+        logger.error(f"Unexpected error: {e!s}")
         import traceback
 
         traceback.print_exc()

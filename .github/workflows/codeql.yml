@@ -1,0 +1,90 @@
+name: CodeQL Security Analysis
+ 
+on:
+
+  push:
+
+    branches:
+
+      - main
+
+  pull_request:
+
+    branches:
+
+      - main
+
+  schedule:
+
+    # Runs every Monday at 8:00 AM UTC automatically
+
+    - cron: '0 8 * * 1'
+ 
+permissions:
+
+  actions: read
+
+  contents: read
+
+  security-events: write
+ 
+jobs:
+
+  analyze:
+
+    name: CodeQL Analyze
+
+    runs-on: ubuntu-latest
+ 
+    strategy:
+
+      fail-fast: false
+
+      matrix:
+
+        language:
+
+          - python
+ 
+    steps:
+
+      # ── Step 1: Checkout code ──
+
+      - name: Checkout code
+
+        uses: actions/checkout@v3
+ 
+      # ── Step 2: Initialize CodeQL ──
+
+      - name: Initialize CodeQL
+
+        uses: github/codeql-action/init@v3
+
+        with:
+
+          languages: ${{ matrix.language }}
+
+          queries: security-extended
+
+          # security-extended gives deeper scan than default
+ 
+      # ── Step 3: Autobuild ──
+
+      - name: Autobuild
+
+        uses: github/codeql-action/autobuild@v3
+
+        # CodeQL automatically builds your code
+
+        # For Python this step is lightweight
+ 
+      # ── Step 4: Perform Analysis ──
+
+      - name: Perform CodeQL Analysis
+
+        uses: github/codeql-action/analyze@v3
+
+        with:
+
+          category: "/language:${{ matrix.language }}"
+ 

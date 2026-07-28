@@ -1,282 +1,161 @@
 name: Deploy Lambda to AWS
- 
+
 on:
-
   push:
-
     branches:
-
       - main
 
   pull_request:
-
     branches:
-
       - main
- 
+
 permissions:
-
   id-token: write
-
   contents: read
-
   security-events: write
- 
+
 jobs:
- 
-  # ─────────────────────────────────────
-
-  # JOB 1: Black — Code Formatting
-
-  # ─────────────────────────────────────
 
   black:
-
     name: Code Formatting (Black)
-
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout code
-
         uses: actions/checkout@v3
- 
+
       - name: Set up Python
-
         uses: actions/setup-python@v4
-
         with:
+          python-version: "3.11"
 
-          python-version: '3.11'
- 
       - name: Install Black
-
         run: pip install black
- 
+
       - name: Check formatting with Black
-
         run: black --check lambda_function.py
- 
-  # ─────────────────────────────────────
-
-  # JOB 2: Ruff — Linting
-
-  # ─────────────────────────────────────
 
   lint:
-
     name: Linting (Ruff)
-
     runs-on: ubuntu-latest
-
     needs: black
 
     steps:
-
       - name: Checkout code
-
         uses: actions/checkout@v3
- 
+
       - name: Set up Python
-
         uses: actions/setup-python@v4
-
         with:
+          python-version: "3.11"
 
-          python-version: '3.11'
- 
       - name: Install Ruff
-
         run: pip install ruff
- 
+
       - name: Lint with Ruff
-
         run: ruff check lambda_function.py
- 
-  # ─────────────────────────────────────
-
-  # JOB 3: Pytest — Run Test Cases
-
-  # ─────────────────────────────────────
 
   test:
-
     name: Run Tests (Pytest)
-
     runs-on: ubuntu-latest
-
     needs: lint
 
     steps:
-
       - name: Checkout code
-
         uses: actions/checkout@v3
- 
+
       - name: Set up Python
-
         uses: actions/setup-python@v4
-
         with:
+          python-version: "3.11"
 
-          python-version: '3.11'
- 
       - name: Install test dependencies
-
         run: pip install pytest pytest-cov boto3
- 
+
       - name: Run tests
-
-        run: |
-
-          pytest tests/test_lambda.py -v
- 
-  # ─────────────────────────────────────
-
-  # JOB 4: Code Coverage
-
-  # ─────────────────────────────────────
+        run: pytest tests/test_lambda.py -v
 
   coverage:
-
     name: Code Coverage
-
     runs-on: ubuntu-latest
-
     needs: test
 
     steps:
-
       - name: Checkout code
-
         uses: actions/checkout@v3
- 
+
       - name: Set up Python
-
         uses: actions/setup-python@v4
-
         with:
+          python-version: "3.11"
 
-          python-version: '3.11'
- 
       - name: Install dependencies
-
         run: pip install pytest pytest-cov boto3
- 
+
       - name: Run coverage
         run: pytest tests/test_lambda.py --cov=lambda_function --cov-report=xml --cov-report=term-missing --cov-fail-under=70
- 
+
       - name: Upload coverage report
-
         uses: actions/upload-artifact@v4
-
         with:
-
           name: coverage-report
-
           path: coverage.xml
- 
-  # ─────────────────────────────────────
-
-  # JOB 5: CodeQL — Security Scan
-
-  # ─────────────────────────────────────
 
   codeql:
-
     name: CodeQL Security Scan
-
     runs-on: ubuntu-latest
-
     needs: lint
 
     steps:
-
       - name: Checkout code
-
         uses: actions/checkout@v3
- 
+
       - name: Initialize CodeQL
-
         uses: github/codeql-action/init@v3
-
         with:
-
           languages: python
- 
+
       - name: Perform CodeQL Analysis
-
         uses: github/codeql-action/analyze@v3
- 
-  # ─────────────────────────────────────
-
-  # JOB 6: Build & Deploy
-
-  # ─────────────────────────────────────
 
   deploy:
-
     name: Build and Deploy Lambda
-
     runs-on: ubuntu-latest
-
     needs: [coverage, codeql]
-
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
- 
+
     steps:
-
       - name: Checkout code
-
         uses: actions/checkout@v3
- 
+
       - name: Set up Python
-
         uses: actions/setup-python@v4
-
         with:
+          python-version: "3.11"
 
-          python-version: '3.11'
- 
       - name: Build ZIP package
-
         run: |
-
           mkdir -p package
-
-          cp lambda_function.py ./package/
-
+          cp lambda_function.py package/
           cd package
-
           zip -r ../lambda_deployment.zip .
-
           cd ..
- 
+
+      - name: Debug GitHub Context
+        run: |
+          echo "Repository: ${{ github.repository }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Actor: ${{ github.actor }}"
+
       - name: Configure AWS credentials
-
         uses: aws-actions/configure-aws-credentials@v4
-
         with:
-
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-
           aws-region: ${{ secrets.AWS_REGION }}
- 
+
       - name: Upload ZIP to S3
-        run: |
-            aws s3 cp lambda_deployment.zip \
-            s3://${{ secrets.S3_BUCKET }}/lambda4/lambda_deployment.zip
- 
+        run: aws s3 cp lambda_deployment.zip s3://${{ secrets.S3_BUCKET }}/lambda4/lambda_deployment.zip
+
       - name: Deploy to Lambda
-
-        run: |
-
-          aws lambda update-function-code \
-
-            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
-
-            --s3-bucket ${{ secrets.S3_BUCKET }} \
-
-            --s3-key lambda4/lambda_deployment.zip
- 
+        run: aws lambda update-function-code --function-name "${{ secrets.LAMBDA_FUNCTION_NAME }}" --s3-bucket "${{ secrets.S3_BUCKET }}" --s3-key lambda4/lambda_deployment.zip

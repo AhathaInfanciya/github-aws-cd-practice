@@ -264,11 +264,8 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
  
       - name: Upload ZIP to S3
-
         run: |
-
-          aws s3 cp lambda_deployment.zip \
-
+            aws s3 cp lambda_deployment.zip \
             s3://${{ secrets.S3_BUCKET }}/lambda4/lambda_deployment.zip
  
       - name: Deploy to Lambda

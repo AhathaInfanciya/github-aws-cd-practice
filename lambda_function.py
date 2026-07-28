@@ -177,7 +177,7 @@ def build_html_report(
 ):
 
     counts = parse_change_counts(summary)
-    _risk_level, _risk_color, _risk_emoji = parse_risk_level(summary)    
+    _risk_level, _risk_color, _risk_emoji = parse_risk_level(summary)
     changes = parse_individual_changes(summary)
     generated_at = datetime.now(UTC).strftime("%B %d, %Y at %I:%M %p UTC")
 

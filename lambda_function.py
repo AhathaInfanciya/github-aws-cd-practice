@@ -7,7 +7,7 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-import boto3  #Amazon Web Services (AWS) Software Development Kit (SDK) for Python
+import boto3  # Amazon Web Services (AWS) Software Development Kit (SDK) for Python
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

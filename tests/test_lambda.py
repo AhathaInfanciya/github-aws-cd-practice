@@ -1,12 +1,7 @@
 import json
-
-import pytest
-
-from unittest.mock import patch, MagicMock
-
-import sys
-
 import os
+import sys
+from unittest.mock import MagicMock, patch
 
 # ─────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
-boto3==1.26.0
-pytest
-pytest-cov
-black
-ruff
+boto3==1.20.0
+pytest==6.2.5
+pytest-cov==3.0.0
+black==22.10.0
+ruff==0.0.100

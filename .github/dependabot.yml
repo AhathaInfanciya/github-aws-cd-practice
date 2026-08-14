@@ -1,59 +1,24 @@
 version: 2
-updates:
-  # ─────────────────────────────────────
-  # Python dependencies (pip)
-  # ─────────────────────────────────────
 
+updates:
   - package-ecosystem: "pip"
     directory: "/"
-
     schedule:
-
-      interval: "weekly"
-
-      day: "monday"
-
-      time: "09:00"
-
+      interval: "daily"
     open-pull-requests-limit: 5
-
     labels:
-
       - "dependencies"
-
       - "python"
-
     commit-message:
-
       prefix: "pip"
 
-      include: "scope"
- 
-  # ─────────────────────────────────────
-
-  # GitHub Actions dependencies
-
-  # ─────────────────────────────────────
-
   - package-ecosystem: "github-actions"
-
     directory: "/"
-
     schedule:
-
       interval: "daily"
-
     open-pull-requests-limit: 5
-
     labels:
-
       - "dependencies"
-
       - "github-actions"
-
     commit-message:
-
       prefix: "actions"
-
-      include: "scope"
- 

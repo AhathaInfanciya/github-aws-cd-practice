@@ -1,15 +1,10 @@
 version: 2
- 
 updates:
- 
   # ─────────────────────────────────────
-
   # Python dependencies (pip)
-
   # ─────────────────────────────────────
 
   - package-ecosystem: "pip"
-
     directory: "/"
 
     schedule:
@@ -46,11 +41,7 @@ updates:
 
     schedule:
 
-      interval: "weekly"
-
-      day: "monday"
-
-      time: "09:00"
+      interval: "daily"
 
     open-pull-requests-limit: 5
 
